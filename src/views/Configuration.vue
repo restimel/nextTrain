@@ -94,7 +94,7 @@ export default {
             this.$store.dispatch('update');
         },
         toHome: function() {
-            this.$router.push('/');
+            this.$router.push('home');
         },
     },
 };

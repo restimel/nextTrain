@@ -33,7 +33,7 @@ export default {
         },
         checkState: function() {
             if (this.fetchState === 'bad') {
-                this.goto('/configuration');
+                this.goto('configuration');
             }
         },
     },
