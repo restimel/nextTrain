@@ -1,5 +1,15 @@
 # next-train
 
+Poc to display next trains departure of a given station
+
+## Purpose
+
+This project should be to prove the feasablity to display next trains departure in a given (french) station using external API.
+
+## Online demonstration
+
+TODO link on github
+
 ## Project setup
 ```
 npm install

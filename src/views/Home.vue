@@ -1,18 +1,35 @@
 <template>
-  <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+    <div class="home">
+        <Train v-for="departure of departures"
+            :key="departure.display_informations.headsign"
+            :departure="departure"
+        />
+    </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import Train from '@/components/Train.vue';
 
 export default {
-  name: 'home',
-  components: {
-    HelloWorld
-  }
-}
+    name: 'home',
+    data: function() {
+        this.$store.dispatch('update');
+        return {};
+    },
+    computed: {
+        departures: function() {
+            return this.$store.state.departures.slice(0, 10);
+        },
+    },
+    components: {
+        Train,
+    },
+};
 </script>
+
+<style scoped>
+.home {
+    display: grid;
+    grid-template: repeat(10, 1fr) / 100%;
+}
+</style>
