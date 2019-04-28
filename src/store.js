@@ -1,6 +1,5 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import { version } from '../package.json';
 
 Vue.use(Vuex);
 
@@ -13,6 +12,7 @@ export default new Vuex.Store({
             timezone: 'Europe/Paris',
             current_datetime: '',
         },
+        fetchState: 'good',
         token: '',
         station: '',
         refreshTime: 30000,
@@ -34,6 +34,11 @@ export default new Vuex.Store({
                 state.refreshTime = refreshTime;
             }
         },
+        setStatus(state, { fetchState }) {
+            if (fetchState) {
+                state.fetchState = fetchState;
+            }
+        },
     },
     actions: {
         async update({ commit, dispatch, state }) {
@@ -48,11 +53,24 @@ export default new Vuex.Store({
                         'Authorization': 'Basic ' + btoa(token),
                     },
                 });
+                if (!response.ok) {
+                    console.warn('Dat failed to be fetched');
+                    commit('setStatus', {
+                        fetchState: 'bad',
+                    });
+                    return;
+                }
                 const json = await response.json();
                 commit('setState', json);
+                commit('setStatus', {
+                    fetchState: 'good',
+                });
                 dispatch('nextUpdate');
             } else {
                 console.info('we cannot fetch data without token and station id');
+                commit('setStatus', {
+                    fetchState: 'bad',
+                });
             }
         },
         nextUpdate({ dispatch, state }) {
