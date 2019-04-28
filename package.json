@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build",
+    "build": "npm version patch; git checkout gh-pages; git merge master; vue-cli-service build; git add -f dist/*; git commit -m 'update dist content'; git checkout -;",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {

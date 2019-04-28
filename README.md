@@ -8,7 +8,9 @@ This project should be to prove the feasablity to display next trains departure 
 
 ## Online demonstration
 
-TODO link on github
+https://restimel.github.io/nextTrain/?token=&station=
+
+(please note that the token and the station id must be provided)
 
 ## Project setup
 ```
