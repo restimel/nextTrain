@@ -4,11 +4,13 @@
             :key="departure.display_informations.headsign"
             :departure="departure"
         />
+        <Clock class="clock" />
     </div>
 </template>
 
 <script>
 import Train from '@/components/Train.vue';
+import Clock from '@/components/Clock.vue';
 
 export default {
     name: 'home',
@@ -46,7 +48,7 @@ export default {
         this.update();
     },
     components: {
-        Train,
+        Train, Clock,
     },
 };
 </script>
@@ -55,5 +57,10 @@ export default {
 .home {
     display: grid;
     grid-template: repeat(10, 1fr) / 100%;
+}
+.clock {
+    position: absolute;
+    top: 5px;
+    right: 5px;
 }
 </style>
