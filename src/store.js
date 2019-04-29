@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
+import { getURL } from '@/helper.js';
+
 Vue.use(Vuex);
 
 let timerRefresh = 0;
@@ -12,26 +14,56 @@ export default new Vuex.Store({
             timezone: 'Europe/Paris',
             current_datetime: '',
         },
-        fetchState: 'good',
+
         token: '',
         station: '',
+        distance: 200,
+        lat: 48.937591000,
+        lng: 2.15785800,
+
         refreshTime: 30000,
+        nbItems: 10,
+        apiName: 'sncf',
+
+        fetchState: 'good',
+        cacheUrl: '',
     },
     mutations: {
         setState(state, {departures, context}) {
             state.departures = departures;
             state.context = context;
         },
-        setConfiguration(state, { token, station, refreshTime }) {
+        setConfiguration(state, { token, station, distance, lat, lng, refreshTime, apiName, nbItems }) {
             if (token) {
                 state.token = token;
             }
             if (station) {
                 state.station = station;
             }
+
+            distance = +distance;
+            if (!isNaN(distance) && distance > 0) {
+                state.distance = distance;
+            }
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                state.lat = +lat;
+                state.lng = +lng;
+            }
+
             refreshTime = +refreshTime;
             if (!isNaN(refreshTime) && refreshTime > 0) {
                 state.refreshTime = refreshTime;
+            }
+
+            nbItems = +nbItems;
+            if (!isNaN(nbItems) && nbItems > 0) {
+                state.nbItems = nbItems;
+            }
+
+            if (apiName) {
+                state.apiName = apiName;
+                state.cacheUrl = '';
             }
         },
         setStatus(state, { fetchState }) {
@@ -39,19 +71,29 @@ export default new Vuex.Store({
                 state.fetchState = fetchState;
             }
         },
+        setCacheUrl(state, cacheUrl) {
+            state.cacheUrl = cacheUrl;
+        },
     },
     actions: {
         async update({ commit, dispatch, state }) {
-            const {token, station} = state;
+            let url = getURL({state, commit}, state.apiName);
+            if (url) {
+                const headers = {
+                    'Content-Type': 'text/plain',
+                };
+                if (url.includes('@')) {
+                    let authorization;
+                    url = url.replace(/(https?:\/\/)([^@]+)@/, (_, protocole, auth) => {
+                        authorization = auth;
+                        return protocole;
+                    });
+                    headers.Authorization = 'Basic ' + btoa(authorization);
+                }
 
-            if (token && station) {
-                const url = `https://api.sncf.com/v1/coverage/sncf/stop_areas/stop_area%3AOCE%3ASA%3A87386417/departures`;
                 const response = await fetch(url, {
                     credentials: 'same-origin',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                        'Authorization': 'Basic ' + btoa(token),
-                    },
+                    headers: headers,
                 });
                 if (!response.ok) {
                     console.warn('Dat failed to be fetched');
