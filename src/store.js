@@ -65,6 +65,18 @@ export default new Vuex.Store({
                 state.apiName = apiName;
                 state.cacheUrl = '';
             }
+
+            const saveConf = {
+                token: state.token,
+                station: state.station,
+                distance: state.distance,
+                lat: state.lat,
+                lng: state.lng,
+                refreshTime: state.refreshTime,
+                nbItems: state.nbItems,
+                apiName: state.apiName,
+            };
+            localStorage.nextTrainConfig = JSON.stringify(saveConf);
         },
         setStatus(state, { fetchState }) {
             if (fetchState) {

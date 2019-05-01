@@ -12,7 +12,7 @@ new Vue({
 }).$mount('#app');
 
 function initializeStore() {
-    const config = {};
+    const config = JSON.parse(localStorage.nextTrainConfig || '{}');
     document.location.search.slice(1).split('&').forEach(attribute => {
         const [key, value] = attribute.split('=');
         config[key] = decodeURIComponent(value);
