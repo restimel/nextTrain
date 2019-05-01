@@ -60,7 +60,7 @@ export default {
 }
 .clock {
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 1vw;
+    right: 1vw;
 }
 </style>

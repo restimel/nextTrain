@@ -17,6 +17,7 @@ html {
 body {
     height: 100%;
     margin: 0;
+    overflow: hidden;
 }
 #app {
     padding: 5px;
