@@ -7,6 +7,10 @@ export const urlAPIs = {
 export function checkURL(state, url) {
     const errors = new Set();
 
+    if (!url) {
+        url = urlAPIs[state.apiName];
+    }
+
     url.replace(/%\((\w+)\)s/g, (_, key) => {
         if (!state[key]) {
             errors.add(key);

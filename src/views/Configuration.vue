@@ -3,6 +3,17 @@
         <h1>Configuration</h1>
         <div class="content">
             <label>
+                API:
+                <select v-model="apiName">
+                    <option v-for="opt of apiOptions"
+                        :key="opt.id"
+                        :value="opt.id"
+                    >
+                        {{opt.label}}
+                    </option>
+                </select>
+            </label>
+            <label>
                 API token: <input v-model="token">
             </label>
             <label>
@@ -36,6 +47,8 @@
 
 <script>
 
+import { urlAPIs, getURL } from '@/helper.js';
+
 export default {
     name: 'configuration',
     data: function() {
@@ -66,6 +79,14 @@ export default {
                 this.$store.commit('setConfiguration', { refreshTime: value * 1000 });
             },
         },
+        apiName: {
+            get: function() {
+                return this.$store.state.apiName;
+            },
+            set: function(value) {
+                this.$store.commit('setConfiguration', { apiName: value });
+            },
+        },
         fetchState: function() {
             return this.$store.state.fetchState;
         },
@@ -81,11 +102,16 @@ export default {
         },
 
         isConfValid: function() {
-            const state = this.token && this.stationId && this.refreshTime > 0;
-            return !!state;
+            return !!getURL(this.$store.state, this.apiName);
         },
         isValid: function() {
             return this.isConfValid && this.fetchState === 'good';
+        },
+        apiOptions: function() {
+            return Object.keys(urlAPIs).map(key => ({
+                id: key,
+                label: key,
+            }));
         },
     },
     methods: {
