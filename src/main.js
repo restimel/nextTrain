@@ -18,6 +18,6 @@ function initializeStore() {
         config[key] = decodeURIComponent(value);
     });
     store.commit('setConfiguration', config);
-    store.dispatch('update');
+    store.dispatch('initialize');
 }
 initializeStore();

@@ -96,13 +96,14 @@ export default {
                 'good': 'La configuration est bonne.',
                 'bad': 'La configuration n\'est pas correcte !',
                 'testing': 'Test de la configuration en cours...',
+                'offline': 'Aucune connexion internet pour tester la ligne...',
             };
 
             return text[this.fetchState];
         },
 
         isConfValid: function() {
-            return !!getURL(this.$store.state, this.apiName);
+            return !!getURL(this.$store, this.apiName);
         },
         isValid: function() {
             return this.isConfValid && this.fetchState === 'good';
@@ -144,7 +145,7 @@ button {
 .good {
     color: rgb(10, 100, 20);
 }
-.bad {
+.bad, .offline {
     color: rgb(100, 20, 10);
 }
 .testing {

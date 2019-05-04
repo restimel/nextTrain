@@ -26,6 +26,7 @@ export default new Vuex.Store({
         apiName: 'sncf',
 
         fetchState: 'good',
+        onLine: true,
         cacheUrl: '',
     },
     mutations: {
@@ -78,9 +79,12 @@ export default new Vuex.Store({
             };
             localStorage.nextTrainConfig = JSON.stringify(saveConf);
         },
-        setStatus(state, { fetchState }) {
+        setStatus(state, { fetchState, onLine }) {
             if (fetchState) {
                 state.fetchState = fetchState;
+            }
+            if (typeof onLine === 'boolean') {
+                state.onLine = onLine;
             }
         },
         setCacheUrl(state, cacheUrl) {
@@ -88,7 +92,24 @@ export default new Vuex.Store({
         },
     },
     actions: {
+        initialize({commit, dispatch}) {
+            commit('setStatus', {onLine: navigator.onLine});
+            if (navigator.connection) {
+                navigator.connection.onchange = () => {
+                    commit('setStatus', { onLine: navigator.onLine });
+                };
+            }
+            dispatch('update');
+        },
         async update({ commit, dispatch, state }) {
+            if (!state.onLine) {
+                commit('setStatus', {
+                    fetchState: 'offline',
+                });
+                dispatch('nextUpdate');
+                return;
+            }
+
             let url = getURL({state, commit}, state.apiName);
             if (url) {
                 const headers = {
@@ -106,9 +127,12 @@ export default new Vuex.Store({
                 const response = await fetch(url, {
                     credentials: 'same-origin',
                     headers: headers,
+                }).catch((err) => {
+                    console.warn('Error in request:', err.message);
+                    return {ok: false};
                 });
                 if (!response.ok) {
-                    console.warn('Dat failed to be fetched');
+                    console.warn('Data failed to be fetched');
                     commit('setStatus', {
                         fetchState: 'bad',
                     });
