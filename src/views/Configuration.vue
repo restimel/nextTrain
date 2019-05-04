@@ -2,13 +2,37 @@
     <div class="configuration">
         <h1>Configuration</h1>
         <div class="content">
-            <label>
+            <label
+                :class="{ isWrong: errors.has('apiName') }"
+            >
+                API:
+                <select v-model="apiName">
+                    <option v-for="opt of apiOptions"
+                        :key="opt.id"
+                        :value="opt.id"
+                    >
+                        {{opt.label}}
+                    </option>
+                </select>
+            </label>
+            <label
+                :class="{ isWrong: errors.has('token') }"
+            >
                 API token: <input v-model="token">
             </label>
-            <label>
+            <label
+                :class="{ isWrong: errors.has('station') }"
+            >
                 Id de gare: <input v-model="stationId">
             </label>
-            <label>
+            <label
+                :class="{ isWrong: errors.has('distance') }"
+            >
+                Distance à partir du lieu: <input v-model="distance" type="range" min="1" max="10000"> {{distanceLabel}}
+            </label>
+            <label
+                :class="{ isWrong: errors.has('refreshTime') }"
+            >
                 Temps de rafraichissement: <input type="number" min="1" v-model="refreshTime">s
             </label>
             <div>
@@ -36,6 +60,8 @@
 
 <script>
 
+import { urlAPIs, getURL, errors as apiErrors } from '@/helper.js';
+
 export default {
     name: 'configuration',
     data: function() {
@@ -58,6 +84,14 @@ export default {
                 this.$store.commit('setConfiguration', { station: value });
             },
         },
+        distance: {
+            get: function() {
+                return this.$store.state.distance;
+            },
+            set: function(value) {
+                this.$store.commit('setConfiguration', { distance: value });
+            },
+        },
         refreshTime: {
             get: function() {
                 return this.$store.state.refreshTime / 1000;
@@ -66,8 +100,19 @@ export default {
                 this.$store.commit('setConfiguration', { refreshTime: value * 1000 });
             },
         },
+        apiName: {
+            get: function() {
+                return this.$store.state.apiName;
+            },
+            set: function(value) {
+                this.$store.commit('setConfiguration', { apiName: value });
+            },
+        },
         fetchState: function() {
             return this.$store.state.fetchState;
+        },
+        errors: function() {
+            return apiErrors;
         },
 
         statusText: function() {
@@ -75,17 +120,31 @@ export default {
                 'good': 'La configuration est bonne.',
                 'bad': 'La configuration n\'est pas correcte !',
                 'testing': 'Test de la configuration en cours...',
+                'offline': 'Aucune connexion internet pour tester la ligne...',
             };
 
             return text[this.fetchState];
         },
 
         isConfValid: function() {
-            const state = this.token && this.stationId && this.refreshTime > 0;
-            return !!state;
+            return !!getURL(this.$store, this.apiName);
         },
         isValid: function() {
             return this.isConfValid && this.fetchState === 'good';
+        },
+        apiOptions: function() {
+            return Object.keys(urlAPIs).map(key => ({
+                id: key,
+                label: key,
+            }));
+        },
+        distanceLabel: function() {
+            let distance = this.distance;
+            if (distance < 1000) {
+                return `${distance}m`;
+            }
+            distance = Math.round(distance / 100) / 10;
+            return `${distance}km`;
         },
     },
     methods: {
@@ -115,10 +174,14 @@ button {
 .content {
     padding-left: 5em;
 }
+.isWrong {
+    color: rgb(100, 20, 10);
+}
+
 .good {
     color: rgb(10, 100, 20);
 }
-.bad {
+.bad, .offline {
     color: rgb(100, 20, 10);
 }
 .testing {

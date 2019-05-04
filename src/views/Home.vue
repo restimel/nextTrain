@@ -4,11 +4,19 @@
             :key="departure.display_informations.headsign"
             :departure="departure"
         />
+        <div v-if="departures.length === 0"
+            class="banner-information"
+        >
+            Aucune ligne n'a été récupérées avec la configuration donnée.
+            <router-link to="configuration">Voir la configuration</router-link>
+        </div>
+        <Clock class="clock" />
     </div>
 </template>
 
 <script>
 import Train from '@/components/Train.vue';
+import Clock from '@/components/Clock.vue';
 
 export default {
     name: 'home',
@@ -46,7 +54,7 @@ export default {
         this.update();
     },
     components: {
-        Train,
+        Train, Clock,
     },
 };
 </script>
@@ -55,5 +63,22 @@ export default {
 .home {
     display: grid;
     grid-template: repeat(10, 1fr) / 100%;
+}
+.clock {
+    position: absolute;
+    top: 1vw;
+    right: 1vw;
+}
+
+.banner-information {
+    position: absolute;
+    z-index: 5;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3vh;
+    padding: 1rem;
+    background-color: rgba(160, 160, 255, 0.6);
+    box-shadow: 0 5px 15px 2px black;
 }
 </style>
