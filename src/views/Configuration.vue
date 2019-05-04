@@ -2,7 +2,9 @@
     <div class="configuration">
         <h1>Configuration</h1>
         <div class="content">
-            <label>
+            <label
+                :class="{ isWrong: errors.has('apiName') }"
+            >
                 API:
                 <select v-model="apiName">
                     <option v-for="opt of apiOptions"
@@ -13,16 +15,24 @@
                     </option>
                 </select>
             </label>
-            <label>
+            <label
+                :class="{ isWrong: errors.has('token') }"
+            >
                 API token: <input v-model="token">
             </label>
-            <label>
+            <label
+                :class="{ isWrong: errors.has('station') }"
+            >
                 Id de gare: <input v-model="stationId">
             </label>
-            <label>
+            <label
+                :class="{ isWrong: errors.has('distance') }"
+            >
                 Distance à partir du lieu: <input v-model="distance" type="range" min="1" max="10000"> {{distanceLabel}}
             </label>
-            <label>
+            <label
+                :class="{ isWrong: errors.has('refreshTime') }"
+            >
                 Temps de rafraichissement: <input type="number" min="1" v-model="refreshTime">s
             </label>
             <div>
@@ -50,7 +60,7 @@
 
 <script>
 
-import { urlAPIs, getURL } from '@/helper.js';
+import { urlAPIs, getURL, errors as apiErrors } from '@/helper.js';
 
 export default {
     name: 'configuration',
@@ -100,6 +110,9 @@ export default {
         },
         fetchState: function() {
             return this.$store.state.fetchState;
+        },
+        errors: function() {
+            return apiErrors;
         },
 
         statusText: function() {
@@ -161,6 +174,10 @@ button {
 .content {
     padding-left: 5em;
 }
+.isWrong {
+    color: rgb(100, 20, 10);
+}
+
 .good {
     color: rgb(10, 100, 20);
 }

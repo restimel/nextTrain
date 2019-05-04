@@ -35,34 +35,49 @@ export default new Vuex.Store({
             state.context = context;
         },
         setConfiguration(state, { token, station, distance, lat, lng, refreshTime, apiName, nbItems }) {
-            if (token) {
+            if (typeof token === 'string') {
                 state.token = token;
             }
-            if (station) {
+            if (typeof station === 'string') {
                 state.station = station;
             }
 
-            distance = +distance;
-            if (!isNaN(distance) && distance > 0) {
-                state.distance = distance;
+            if (typeof distance !== 'undefined') {
+                distance = +distance;
+                if (!isNaN(distance) && distance > 0) {
+                    state.distance = distance;
+                } else {
+                    state.distance = 200;
+                }
             }
 
             if (!isNaN(lat) && !isNaN(lng)) {
                 state.lat = +lat;
                 state.lng = +lng;
+            } else if (lat !== undefined || lng !== undefined) {
+                state.lat = 0;
+                state.lng = 0;
             }
 
-            refreshTime = +refreshTime;
-            if (!isNaN(refreshTime) && refreshTime > 0) {
-                state.refreshTime = refreshTime;
+            if (typeof refreshTime !== 'undefined') {
+                refreshTime = +refreshTime;
+                if (!isNaN(refreshTime) && refreshTime > 0) {
+                    state.refreshTime = refreshTime;
+                } else {
+                    state.refreshTime = 30;
+                }
             }
 
-            nbItems = +nbItems;
-            if (!isNaN(nbItems) && nbItems > 0) {
-                state.nbItems = nbItems;
+            if (typeof nbItems !== 'undefined') {
+                nbItems = +nbItems;
+                if (!isNaN(nbItems) && nbItems > 0) {
+                    state.nbItems = nbItems;
+                } else {
+                    state.nbItems = 10;
+                }
             }
 
-            if (apiName) {
+            if (typeof apiName === 'string') {
                 state.apiName = apiName;
                 state.cacheUrl = '';
             }

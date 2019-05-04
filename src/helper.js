@@ -4,15 +4,18 @@ export const urlAPIs = {
     stif: 'https://opendata.stif.info/service/api-stif-horaires/coords/%(lng)s%3B%(lat)s/departures?count=%(nbItems)s&distance=%(distance)s&apikey=%(token)s',
 };
 
+export let errors = new Set();
+
 export function checkURL(state, url) {
-    const errors = new Set();
+    errors.clear();
 
     if (!url) {
         url = urlAPIs[state.apiName];
     }
 
     url.replace(/%\((\w+)\)s/g, (_, key) => {
-        if (!state[key]) {
+        const val = state[key];
+        if (val.toString() === '' || val === undefined || val === null) {
             errors.add(key);
         }
     });
