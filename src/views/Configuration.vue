@@ -20,6 +20,9 @@
                 Id de gare: <input v-model="stationId">
             </label>
             <label>
+                Distance à partir du lieu: <input v-model="distance" type="range" min="1" max="10000"> {{distanceLabel}}
+            </label>
+            <label>
                 Temps de rafraichissement: <input type="number" min="1" v-model="refreshTime">s
             </label>
             <div>
@@ -71,6 +74,14 @@ export default {
                 this.$store.commit('setConfiguration', { station: value });
             },
         },
+        distance: {
+            get: function() {
+                return this.$store.state.distance;
+            },
+            set: function(value) {
+                this.$store.commit('setConfiguration', { distance: value });
+            },
+        },
         refreshTime: {
             get: function() {
                 return this.$store.state.refreshTime / 1000;
@@ -113,6 +124,14 @@ export default {
                 id: key,
                 label: key,
             }));
+        },
+        distanceLabel: function() {
+            let distance = this.distance;
+            if (distance < 1000) {
+                return `${distance}m`;
+            }
+            distance = Math.round(distance / 100) / 10;
+            return `${distance}km`;
         },
     },
     methods: {
