@@ -13,10 +13,6 @@ export default {
     props: {
         departure: Object,
     },
-    data: function() {
-        return {
-        };
-    },
     computed: {
         codeColor: function() {
             const color = this.departure.display_informations.color;

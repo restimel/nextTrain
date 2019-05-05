@@ -24,6 +24,7 @@ export default new Vuex.Store({
         refreshTime: 30000,
         nbItems: 10,
         apiName: 'sncf',
+        apiMode: 'position',
 
         fetchState: 'good',
         onLine: true,
@@ -34,7 +35,7 @@ export default new Vuex.Store({
             state.departures = departures;
             state.context = context;
         },
-        setConfiguration(state, { token, station, distance, lat, lng, refreshTime, apiName, nbItems }) {
+        setConfiguration(state, { token, station, distance, lat, lng, refreshTime, apiName, apiMode, nbItems }) {
             if (typeof token === 'string') {
                 state.token = token;
             }
@@ -81,6 +82,10 @@ export default new Vuex.Store({
                 state.apiName = apiName;
                 state.cacheUrl = '';
             }
+            if (typeof apiMode === 'string') {
+                state.apiMode = apiMode;
+                state.cacheUrl = '';
+            }
 
             const saveConf = {
                 token: state.token,
@@ -91,6 +96,7 @@ export default new Vuex.Store({
                 refreshTime: state.refreshTime,
                 nbItems: state.nbItems,
                 apiName: state.apiName,
+                apiMode: state.apiMode,
             };
             localStorage.nextTrainConfig = JSON.stringify(saveConf);
         },
@@ -125,7 +131,7 @@ export default new Vuex.Store({
                 return;
             }
 
-            let url = getURL({state, commit}, state.apiName);
+            let url = getURL({state, commit}, state.apiName, state.apiMode);
             if (url) {
                 const headers = {
                     'Content-Type': 'text/plain',

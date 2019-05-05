@@ -1,6 +1,6 @@
 {
   "name": "next-train",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -9,8 +9,10 @@
   },
   "dependencies": {
     "core-js": "^2.6.5",
+    "leaflet": "^1.4.0",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
+    "vue2-leaflet": "^2.1.1",
     "vuex": "^3.0.1"
   },
   "devDependencies": {

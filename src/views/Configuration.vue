@@ -16,6 +16,19 @@
                 </select>
             </label>
             <label
+                :class="{ isWrong: errors.has('apiMode') }"
+            >
+                API mode:
+                <select v-model="apiMode">
+                    <option v-for="opt of apiModeOptions"
+                        :key="opt.id"
+                        :value="opt.id"
+                    >
+                        {{opt.label}}
+                    </option>
+                </select>
+            </label>
+            <label
                 :class="{ isWrong: errors.has('token') }"
             >
                 API token: <input v-model="token">
@@ -26,9 +39,15 @@
                 Id de gare: <input v-model="stationId">
             </label>
             <label
+                :class="{ isWrong: errors.has('station') }"
+            >
+                Lieu:
+                <GeoMap v-model="latLng" />
+            </label>
+            <label
                 :class="{ isWrong: errors.has('distance') }"
             >
-                Distance à partir du lieu: <input v-model="distance" type="range" min="1" max="10000"> {{distanceLabel}}
+                Distance à partir du lieu: <DistanceRange />
             </label>
             <label
                 :class="{ isWrong: errors.has('refreshTime') }"
@@ -61,12 +80,11 @@
 <script>
 
 import { urlAPIs, getURL, errors as apiErrors } from '@/helper.js';
+import DistanceRange from '@/components/DistanceRange.vue';
+import GeoMap from '@/components/Map.vue';
 
 export default {
     name: 'configuration',
-    data: function() {
-        return {};
-    },
     computed: {
         token: {
             get: function() {
@@ -84,12 +102,13 @@ export default {
                 this.$store.commit('setConfiguration', { station: value });
             },
         },
-        distance: {
+        latLng: {
             get: function() {
-                return this.$store.state.distance;
+                return this.$store.state.lat + ';' + this.$store.state.lng;
             },
             set: function(value) {
-                this.$store.commit('setConfiguration', { distance: value });
+                const [lat, lng] = value.split(';');
+                this.$store.commit('setConfiguration', { lat, lng });
             },
         },
         refreshTime: {
@@ -106,6 +125,14 @@ export default {
             },
             set: function(value) {
                 this.$store.commit('setConfiguration', { apiName: value });
+            },
+        },
+        apiMode: {
+            get: function() {
+                return this.$store.state.apiMode;
+            },
+            set: function(value) {
+                this.$store.commit('setConfiguration', { apiMode: value });
             },
         },
         fetchState: function() {
@@ -127,7 +154,8 @@ export default {
         },
 
         isConfValid: function() {
-            return !!getURL(this.$store, this.apiName);
+            //TODO reset url
+            return !!getURL(this.$store, this.apiName, this.apiMode);
         },
         isValid: function() {
             return this.isConfValid && this.fetchState === 'good';
@@ -138,13 +166,11 @@ export default {
                 label: key,
             }));
         },
-        distanceLabel: function() {
-            let distance = this.distance;
-            if (distance < 1000) {
-                return `${distance}m`;
-            }
-            distance = Math.round(distance / 100) / 10;
-            return `${distance}km`;
+        apiModeOptions: function() {
+            return Object.keys(urlAPIs[this.apiName]).map(key => ({
+                id: key,
+                label: key,
+            }));
         },
     },
     methods: {
@@ -155,6 +181,9 @@ export default {
         toHome: function() {
             this.$router.push('home');
         },
+    },
+    components: {
+        DistanceRange, GeoMap,
     },
 };
 </script>
@@ -175,7 +204,7 @@ button {
     padding-left: 5em;
 }
 .isWrong {
-    color: rgb(100, 20, 10);
+    color: rgb(150, 30, 20);
 }
 
 .good {
