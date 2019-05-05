@@ -63,13 +63,13 @@ export default {
             if (!this.value) {
                 return 0;
             }
-            return this.value.split(';')[0];
+            return +this.value.split(';')[0];
         },
         lng: function() {
             if (!this.value) {
                 return 0;
             }
-            return this.value.split(';')[1];
+            return +this.value.split(';')[1];
         },
         center: function() {
             return [this.lat, this.lng];
@@ -82,6 +82,13 @@ export default {
         initialize() {
             if (this.value) {
                 this.mapCenter = this.center.slice();
+                this.$nextTick(() => {
+                    const radius = this.radius;
+                    if (this.$refs.map && radius) {
+                        const point = L.latLng(this.mapCenter);
+                        this.$refs.map.fitBounds(point.toBounds(radius));
+                    }
+                });
             }
         },
         getPosition() {
