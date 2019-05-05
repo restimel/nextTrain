@@ -16,6 +16,19 @@
                 </select>
             </label>
             <label
+                :class="{ isWrong: errors.has('apiMode') }"
+            >
+                API mode:
+                <select v-model="apiMode">
+                    <option v-for="opt of apiModeOptions"
+                        :key="opt.id"
+                        :value="opt.id"
+                    >
+                        {{opt.label}}
+                    </option>
+                </select>
+            </label>
+            <label
                 :class="{ isWrong: errors.has('token') }"
             >
                 API token: <input v-model="token">
@@ -108,6 +121,14 @@ export default {
                 this.$store.commit('setConfiguration', { apiName: value });
             },
         },
+        apiMode: {
+            get: function() {
+                return this.$store.state.apiMode;
+            },
+            set: function(value) {
+                this.$store.commit('setConfiguration', { apiMode: value });
+            },
+        },
         fetchState: function() {
             return this.$store.state.fetchState;
         },
@@ -127,13 +148,20 @@ export default {
         },
 
         isConfValid: function() {
-            return !!getURL(this.$store, this.apiName);
+            //TODO reset url
+            return !!getURL(this.$store, this.apiName, this.apiMode);
         },
         isValid: function() {
             return this.isConfValid && this.fetchState === 'good';
         },
         apiOptions: function() {
             return Object.keys(urlAPIs).map(key => ({
+                id: key,
+                label: key,
+            }));
+        },
+        apiModeOptions: function() {
+            return Object.keys(urlAPIs[this.apiName]).map(key => ({
                 id: key,
                 label: key,
             }));
