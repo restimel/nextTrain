@@ -39,9 +39,15 @@
                 Id de gare: <input v-model="stationId">
             </label>
             <label
+                :class="{ isWrong: errors.has('station') }"
+            >
+                Lieu:
+                <GeoMap v-model="latLng" />
+            </label>
+            <label
                 :class="{ isWrong: errors.has('distance') }"
             >
-                Distance à partir du lieu: <input v-model="distance" type="range" min="1" max="10000"> {{distanceLabel}}
+                Distance à partir du lieu: <DistanceRange />
             </label>
             <label
                 :class="{ isWrong: errors.has('refreshTime') }"
@@ -74,12 +80,11 @@
 <script>
 
 import { urlAPIs, getURL, errors as apiErrors } from '@/helper.js';
+import DistanceRange from '@/components/DistanceRange.vue';
+import GeoMap from '@/components/Map.vue';
 
 export default {
     name: 'configuration',
-    data: function() {
-        return {};
-    },
     computed: {
         token: {
             get: function() {
@@ -97,12 +102,13 @@ export default {
                 this.$store.commit('setConfiguration', { station: value });
             },
         },
-        distance: {
+        latLng: {
             get: function() {
-                return this.$store.state.distance;
+                return this.$store.state.lat + ';' + this.$store.state.lng;
             },
             set: function(value) {
-                this.$store.commit('setConfiguration', { distance: value });
+                const [lat, lng] = value.split(';');
+                this.$store.commit('setConfiguration', { lat, lng });
             },
         },
         refreshTime: {
@@ -166,14 +172,6 @@ export default {
                 label: key,
             }));
         },
-        distanceLabel: function() {
-            let distance = this.distance;
-            if (distance < 1000) {
-                return `${distance}m`;
-            }
-            distance = Math.round(distance / 100) / 10;
-            return `${distance}km`;
-        },
     },
     methods: {
         update: function() {
@@ -183,6 +181,9 @@ export default {
         toHome: function() {
             this.$router.push('home');
         },
+    },
+    components: {
+        DistanceRange, GeoMap,
     },
 };
 </script>
@@ -203,7 +204,7 @@ button {
     padding-left: 5em;
 }
 .isWrong {
-    color: rgb(100, 20, 10);
+    color: rgb(150, 30, 20);
 }
 
 .good {
