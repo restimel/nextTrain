@@ -9,7 +9,7 @@
 export default {
     name: 'clock',
     data: function() {
-        setTimeout(this.updateTime.bind(this), 0);
+        this.$nextTick(this.updateTime.bind(this));
         return {
             minutes: 0,
             hours: 0,
