@@ -37,6 +37,14 @@ export function checkURL(state, url) {
     return !errors.size;
 }
 
+export function getUrlTags(name, mode){
+    const api = urlAPIs[name];
+    const url = api && api[mode];
+    const rgx = /%\(([^)]+)\)s/g;
+    const list = url.match(rgx);
+    return list.map(tag => tag.replace(rgx, '$1'));
+}
+
 export function getURL({ state, commit }, name, mode) {
     let url = state.cacheUrl;
 

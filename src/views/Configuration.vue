@@ -28,23 +28,23 @@
                     </option>
                 </select>
             </label>
-            <label
+            <label v-if="tags.includes('token')"
                 :class="{ isWrong: errors.has('token') }"
             >
                 API token: <input v-model="token">
             </label>
-            <label
+            <label v-if="tags.includes('station')"
                 :class="{ isWrong: errors.has('station') }"
             >
                 Id de gare: <input v-model="stationId">
             </label>
-            <label
-                :class="{ isWrong: errors.has('station') }"
+            <label v-if="tags.includes('lat') || tags.includes('lng')"
+                :class="{ isWrong: errors.has('lat') || errors.has('lng') }"
             >
                 Lieu:
                 <GeoMap v-model="latLng" />
             </label>
-            <label
+            <label v-if="tags.includes('distance')"
                 :class="{ isWrong: errors.has('distance') }"
             >
                 Distance à partir du lieu: <DistanceRange />
@@ -91,7 +91,7 @@
 
 <script>
 
-import { urlAPIs, getURL, errors as apiErrors } from '@/helper.js';
+import { urlAPIs, getURL, getUrlTags, errors as apiErrors } from '@/helper.js';
 import DistanceRange from '@/components/DistanceRange.vue';
 import GeoMap from '@/components/Map.vue';
 import Period from '@/components/Period.vue';
@@ -161,6 +161,10 @@ export default {
         },
         errors: function() {
             return apiErrors;
+        },
+
+        tags: function() {
+            return getUrlTags(this.apiName, this.apiMode);
         },
 
         statusText: function() {
