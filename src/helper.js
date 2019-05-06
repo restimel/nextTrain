@@ -11,6 +11,15 @@ export const urlAPIs = {
 
 export let errors = new Set();
 
+export function checkSilentPeriod(state) {
+    const date = new Date();
+    const hour = date.getHours();
+    const min = date.getMinutes();
+    const periods = state.silentPeriods;
+
+    return periods.some(period => period.from.hour <= hour && period.from.minute <= min && period.to.hour >= hour && period.to.minute >= min);
+}
+
 export function checkURL(state, url) {
     errors.clear();
 

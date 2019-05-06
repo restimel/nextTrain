@@ -54,6 +54,18 @@
             >
                 Temps de rafraichissement: <input type="number" min="1" v-model="refreshTime">s
             </label>
+            <label
+                :class="{ isWrong: errors.has('silentPeriods') }"
+            >
+                Périodes sans rafraichissement:
+                    <Period v-for="(period, key) of silentPeriods"
+                        :key="key"
+                        :period="period"
+                        @input="(period)=>updatePeriod(key, period)"
+                        @delete="deletePeriod(key)"
+                    />
+                    <button @click="addPeriod">+</button>
+            </label>
             <div>
                 <button
                     :disabled="!isConfValid"
@@ -64,7 +76,7 @@
                 <button v-if="isValid"
                     @click="toHome"
                 >
-                    Home
+                    Voir les départs
                 </button>
                 <button v-else disabled>
                     Configuration invalide
@@ -82,6 +94,7 @@
 import { urlAPIs, getURL, errors as apiErrors } from '@/helper.js';
 import DistanceRange from '@/components/DistanceRange.vue';
 import GeoMap from '@/components/Map.vue';
+import Period from '@/components/Period.vue';
 
 export default {
     name: 'configuration',
@@ -117,6 +130,14 @@ export default {
             },
             set: function(value) {
                 this.$store.commit('setConfiguration', { refreshTime: value * 1000 });
+            },
+        },
+        silentPeriods: {
+            get: function() {
+                return this.$store.state.silentPeriods.slice();
+            },
+            set: function(value) {
+                this.$store.commit('setConfiguration', { silentPeriods: value });
             },
         },
         apiName: {
@@ -174,16 +195,40 @@ export default {
         },
     },
     methods: {
-        update: function() {
+        update() {
             this.$store.commit('setStatus', { fetchState: 'testing' });
             this.$store.dispatch('update');
         },
-        toHome: function() {
+        toHome() {
             this.$router.push('home');
+        },
+        addPeriod() {
+            const periods = this.silentPeriods;
+            periods.push({
+                from: {
+                    hour: 0,
+                    minute: 0,
+                },
+                to: {
+                    hour: 23,
+                    minute: 59,
+                },
+            });
+            this.silentPeriods = periods;
+        },
+        updatePeriod(key, period) {
+            const periods = this.silentPeriods;
+            periods[key] = period;
+            this.silentPeriods = periods;
+        },
+        deletePeriod(key) {
+            const periods = this.silentPeriods;
+            periods.splice(key, 1);
+            this.silentPeriods = periods;
         },
     },
     components: {
-        DistanceRange, GeoMap,
+        DistanceRange, GeoMap, Period,
     },
 };
 </script>
