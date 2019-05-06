@@ -1,13 +1,13 @@
 <template>
     <div class="home">
         <Train v-for="departure of departures"
-            :key="departure.display_informations.headsign"
+            :key="departure.route.id + departure.stop_date_time.departure_date_time"
             :departure="departure"
         />
         <div v-if="departures.length === 0"
             class="banner-information"
         >
-            Aucune ligne n'a été récupérées avec la configuration donnée.
+            Aucune ligne n'a été récupérée avec la configuration donnée.
             <router-link to="configuration">Voir la configuration</router-link>
         </div>
         <Clock class="clock" />

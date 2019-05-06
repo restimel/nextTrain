@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import { getURL } from '@/helper.js';
+import { getURL, checkSilentPeriod } from '@/helper.js';
 
 Vue.use(Vuex);
 
@@ -20,6 +20,7 @@ export default new Vuex.Store({
         distance: 200,
         lat: 48.937591000,
         lng: 2.15785800,
+        silentPeriods: [],
 
         refreshTime: 30000,
         nbItems: 10,
@@ -35,7 +36,7 @@ export default new Vuex.Store({
             state.departures = departures;
             state.context = context;
         },
-        setConfiguration(state, { token, station, distance, lat, lng, refreshTime, apiName, apiMode, nbItems }) {
+        setConfiguration(state, { token, station, distance, lat, lng, refreshTime, apiName, apiMode, silentPeriods, nbItems }) {
             if (typeof token === 'string') {
                 state.token = token;
             }
@@ -69,6 +70,10 @@ export default new Vuex.Store({
                 }
             }
 
+            if (silentPeriods instanceof Array) {
+                state.silentPeriods = silentPeriods.slice();
+            }
+
             if (typeof nbItems !== 'undefined') {
                 nbItems = +nbItems;
                 if (!isNaN(nbItems) && nbItems > 0) {
@@ -80,12 +85,11 @@ export default new Vuex.Store({
 
             if (typeof apiName === 'string') {
                 state.apiName = apiName;
-                state.cacheUrl = '';
             }
             if (typeof apiMode === 'string') {
                 state.apiMode = apiMode;
-                state.cacheUrl = '';
             }
+            state.cacheUrl = '';
 
             const saveConf = {
                 token: state.token,
@@ -94,6 +98,7 @@ export default new Vuex.Store({
                 lat: state.lat,
                 lng: state.lng,
                 refreshTime: state.refreshTime,
+                silentPeriods: state.silentPeriods,
                 nbItems: state.nbItems,
                 apiName: state.apiName,
                 apiMode: state.apiMode,
@@ -177,7 +182,11 @@ export default new Vuex.Store({
             const period = state.refreshTime;
 
             timerRefresh = setTimeout(() => {
-                dispatch('update');
+                if (checkSilentPeriod(state)) {
+                    dispatch('nextUpdate');
+                } else {
+                    dispatch('update');
+                }
             }, period);
         },
     },

@@ -28,23 +28,23 @@
                     </option>
                 </select>
             </label>
-            <label
+            <label v-if="tags.includes('token')"
                 :class="{ isWrong: errors.has('token') }"
             >
                 API token: <input v-model="token">
             </label>
-            <label
+            <label v-if="tags.includes('station')"
                 :class="{ isWrong: errors.has('station') }"
             >
                 Id de gare: <input v-model="stationId">
             </label>
-            <label
-                :class="{ isWrong: errors.has('station') }"
+            <label v-if="tags.includes('lat') || tags.includes('lng')"
+                :class="{ isWrong: errors.has('lat') || errors.has('lng') }"
             >
                 Lieu:
                 <GeoMap v-model="latLng" />
             </label>
-            <label
+            <label v-if="tags.includes('distance')"
                 :class="{ isWrong: errors.has('distance') }"
             >
                 Distance à partir du lieu: <DistanceRange />
@@ -53,6 +53,18 @@
                 :class="{ isWrong: errors.has('refreshTime') }"
             >
                 Temps de rafraichissement: <input type="number" min="1" v-model="refreshTime">s
+            </label>
+            <label
+                :class="{ isWrong: errors.has('silentPeriods') }"
+            >
+                Périodes sans rafraichissement:
+                    <Period v-for="(period, key) of silentPeriods"
+                        :key="key"
+                        :period="period"
+                        @input="(period)=>updatePeriod(key, period)"
+                        @delete="deletePeriod(key)"
+                    />
+                    <button @click="addPeriod">+</button>
             </label>
             <div>
                 <button
@@ -64,7 +76,7 @@
                 <button v-if="isValid"
                     @click="toHome"
                 >
-                    Home
+                    Voir les départs
                 </button>
                 <button v-else disabled>
                     Configuration invalide
@@ -79,9 +91,10 @@
 
 <script>
 
-import { urlAPIs, getURL, errors as apiErrors } from '@/helper.js';
+import { urlAPIs, getURL, getUrlTags, errors as apiErrors } from '@/helper.js';
 import DistanceRange from '@/components/DistanceRange.vue';
 import GeoMap from '@/components/Map.vue';
+import Period from '@/components/Period.vue';
 
 export default {
     name: 'configuration',
@@ -119,6 +132,14 @@ export default {
                 this.$store.commit('setConfiguration', { refreshTime: value * 1000 });
             },
         },
+        silentPeriods: {
+            get: function() {
+                return this.$store.state.silentPeriods.slice();
+            },
+            set: function(value) {
+                this.$store.commit('setConfiguration', { silentPeriods: value });
+            },
+        },
         apiName: {
             get: function() {
                 return this.$store.state.apiName;
@@ -140,6 +161,10 @@ export default {
         },
         errors: function() {
             return apiErrors;
+        },
+
+        tags: function() {
+            return getUrlTags(this.apiName, this.apiMode);
         },
 
         statusText: function() {
@@ -174,16 +199,40 @@ export default {
         },
     },
     methods: {
-        update: function() {
+        update() {
             this.$store.commit('setStatus', { fetchState: 'testing' });
             this.$store.dispatch('update');
         },
-        toHome: function() {
+        toHome() {
             this.$router.push('home');
+        },
+        addPeriod() {
+            const periods = this.silentPeriods;
+            periods.push({
+                from: {
+                    hour: 0,
+                    minute: 0,
+                },
+                to: {
+                    hour: 23,
+                    minute: 59,
+                },
+            });
+            this.silentPeriods = periods;
+        },
+        updatePeriod(key, period) {
+            const periods = this.silentPeriods;
+            periods[key] = period;
+            this.silentPeriods = periods;
+        },
+        deletePeriod(key) {
+            const periods = this.silentPeriods;
+            periods.splice(key, 1);
+            this.silentPeriods = periods;
         },
     },
     components: {
-        DistanceRange, GeoMap,
+        DistanceRange, GeoMap, Period,
     },
 };
 </script>
