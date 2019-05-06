@@ -44,7 +44,7 @@ export default {
         },
         displayTime: function() {
             const time = this.time;
-            let min = time % 60;
+            let min = Math.abs(time) % 60;
             const hour = Math.floor(time / 60);
             if (hour) {
                 if (min < 10) {

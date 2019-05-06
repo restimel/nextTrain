@@ -10,6 +10,12 @@
             Aucune ligne n'a été récupérée avec la configuration donnée.
             <router-link to="configuration">Voir la configuration</router-link>
         </div>
+        <div v-if="modeText"
+            class="notification"
+            @click="update"
+        >
+            {{modeText}}
+        </div>
         <Clock class="clock" />
     </div>
 </template>
@@ -17,19 +23,30 @@
 <script>
 import Train from '@/components/Train.vue';
 import Clock from '@/components/Clock.vue';
+import { checkSilentPeriod } from '@/helper.js';
 
 export default {
     name: 'home',
     data: function() {
         this.checkState();
-        return {};
+        this.checkMode();
+        return {
+            mode: 'normal',
+        };
     },
     computed: {
         departures: function() {
             return this.$store.state.departures.slice(0, 10);
         },
         fetchState: function() {
+            this.checkMode();
             return this.$store.state.fetchState;
+        },
+        modeText() {
+            switch (this.mode) {
+                case 'silent': return 'Silent mode: Aucun rafraichissement n\'est effectué automatiquement';
+                default: return '';
+            }
         },
     },
     methods: {
@@ -43,6 +60,10 @@ export default {
             if (this.fetchState === 'bad') {
                 this.goto('configuration');
             }
+        },
+        checkMode: function() {
+            const isSilent = checkSilentPeriod(this.$store.state);
+            this.mode = isSilent ? 'silent' : 'normal';
         },
     },
     watch: {
@@ -80,5 +101,18 @@ export default {
     padding: 1rem;
     background-color: rgba(160, 160, 255, 0.6);
     box-shadow: 0 5px 15px 2px black;
+}
+.notification {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 0);
+    font-size: 3vh;
+    padding: 1rem;
+    background-color: rgba(160, 160, 160, 0.4);
+    box-shadow: 0 5px 15px 0 black;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+    cursor: pointer;
 }
 </style>
