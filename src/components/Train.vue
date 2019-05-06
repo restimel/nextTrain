@@ -19,8 +19,16 @@ export default {
             return `color:#${color}`;
         },
         line: function() {
-            const mode = this.departure.display_informations.commercial_mode;
-            const code = this.departure.display_informations.label;
+            const info = this.departure.display_informations;
+            const mode = info.commercial_mode;
+            const code = info.label;
+            const headSign = info.headsign;
+            if (mode.length + code.length > 12) {
+                if (mode.length + headSign.length <= 12) {
+                    return `${mode} ${headSign}`;
+                }
+                return mode;
+            }
             return `${mode} ${code}`;
         },
         direction: function() {
@@ -35,7 +43,16 @@ export default {
             return elapsed;
         },
         displayTime: function() {
-            return `${this.time} min`;
+            const time = this.time;
+            let min = time % 60;
+            const hour = Math.floor(time / 60);
+            if (hour) {
+                if (min < 10) {
+                    min = `0${min}`;
+                }
+                return `${hour} h ${min}`;
+            }
+            return `${min} min`;
         },
         status: function() {
             const time = this.time;

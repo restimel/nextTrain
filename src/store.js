@@ -80,12 +80,11 @@ export default new Vuex.Store({
 
             if (typeof apiName === 'string') {
                 state.apiName = apiName;
-                state.cacheUrl = '';
             }
             if (typeof apiMode === 'string') {
                 state.apiMode = apiMode;
-                state.cacheUrl = '';
             }
+            state.cacheUrl = '';
 
             const saveConf = {
                 token: state.token,
