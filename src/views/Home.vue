@@ -81,7 +81,7 @@ export default {
             }
         },
         checkMode: function() {
-            const isSilent = checkSilentPeriod(this.$store.state);
+            const isSilent = checkSilentPeriod(this.$store);
             this.mode = isSilent ? 'silent' : 'normal';
         },
     },

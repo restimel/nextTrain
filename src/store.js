@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import { getURL, checkSilentPeriod } from '@/helper.js';
+import { getURL, checkSilentPeriod, compareDate } from '@/helper.js';
 
 Vue.use(Vuex);
 
@@ -119,6 +119,31 @@ export default new Vuex.Store({
         fetchState: 'good',
         onLine: true,
     }, initConf()),
+    getters: {
+        silentPeriods(state) {
+            return state.silentPeriods.reduce((periods, period) => {
+                const {from, to} = period;
+                if (compareDate(from, to)) {
+                    periods.push(period);
+                } else {
+                    periods.push({
+                        from: {
+                            hour: 0,
+                            minute:0,
+                        },
+                        to: to,
+                    }, {
+                        from: from,
+                        to: {
+                            hour: 23,
+                            minute: 59,
+                        },
+                    });
+                }
+                return periods;
+            }, []);
+        },
+    },
     mutations: {
         setState(state, {departures, context}) {
             state.departures = departures;
@@ -236,12 +261,12 @@ export default new Vuex.Store({
                 });
             }
         },
-        nextUpdate({ dispatch, state }) {
+        nextUpdate({ dispatch, state, getters }) {
             clearTimeout(timerRefresh);
             const period = state.refreshTime;
 
             timerRefresh = setTimeout(() => {
-                if (checkSilentPeriod(state)) {
+                if (checkSilentPeriod({getters})) {
                     dispatch('nextUpdate');
                 } else {
                     dispatch('update');
