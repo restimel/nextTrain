@@ -12,10 +12,15 @@ new Vue({
 }).$mount('#app');
 
 function initializeStore() {
-    const config = JSON.parse(localStorage.nextTrainConfig || '{}');
+    let config = JSON.parse(localStorage.nextTrainConfig || '[]');
+
+    if (!Array.isArray(config)) {
+        config = [config];
+    }
+
     document.location.search.slice(1).split('&').forEach(attribute => {
         const [key, value] = attribute.split('=');
-        config[key] = decodeURIComponent(value);
+        config[0][key] = decodeURIComponent(value);
     });
     store.commit('setConfiguration', config);
     store.dispatch('initialize');

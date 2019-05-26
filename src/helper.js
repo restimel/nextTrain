@@ -11,13 +11,20 @@ export const urlAPIs = {
 
 export let errors = new Set();
 
-export function checkSilentPeriod(state) {
+export function compareDate(date1, date2) {
+    return date1.hour < date2.hour || (date1.hour === date2.hour && date1.minute < date2.minute);
+}
+
+export function checkSilentPeriod({getters}) {
     const date = new Date();
     const hour = date.getHours();
-    const min = date.getMinutes();
-    const periods = state.silentPeriods;
+    const minute = date.getMinutes();
+    const currentDate = {
+        hour, minute,
+    };
+    const periods = getters.silentPeriods;
 
-    return periods.some(period => period.from.hour <= hour && period.from.minute <= min && period.to.hour >= hour && period.to.minute >= min);
+    return periods.some(period => compareDate(period.from, currentDate) && compareDate(currentDate, period.to));
 }
 
 export function checkURL(state, url) {

@@ -10,7 +10,7 @@
             v-model="toTime"
             type="time"
         />
-        <button @click="$emit('delete')" class="delete">×</button>
+        <button @click.prevent.stop="$emit('delete')" class="delete">×</button>
     </div>
 </template>
 

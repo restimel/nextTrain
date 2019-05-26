@@ -1,7 +1,7 @@
 <template>
     <div class="home">
-        <Train v-for="departure of departures"
-            :key="departure.route.id + departure.stop_date_time.departure_date_time"
+        <Train v-for="(departure, idx) of departures"
+            :key="departure.route.id + departure.stop_date_time.departure_date_time + idx"
             :departure="departure"
         />
         <div v-if="departures.length === 0"
@@ -9,6 +9,12 @@
         >
             Aucune ligne n'a été récupérée avec la configuration donnée.
             <router-link to="configuration">Voir la configuration</router-link>
+        </div>
+        <div
+            class="banner-test"
+            :class="{'banner-show': isLoading}"
+        >
+            Loading...
         </div>
         <div v-if="modeText"
             class="notification"
@@ -27,16 +33,34 @@ import { checkSilentPeriod } from '@/helper.js';
 
 export default {
     name: 'home',
+    props: {
+        id: {
+            type: Number,
+            required: false,
+        },
+    },
     data: function() {
+        this.$nextTick(() => {
+            this.checkIndex();
+        });
         this.checkState();
         this.checkMode();
+        setTimeout(() => {
+            this.test = true;
+        }, 2000);
+
         return {
+            currentIndex: this.id || this.$route.params.id,
             mode: 'normal',
+            test: false,
         };
     },
     computed: {
         departures: function() {
             return this.$store.state.departures.slice(0, 10);
+        },
+        isLoading: function() {
+            return this.$store.state.isLoading;
         },
         fetchState: function() {
             this.checkMode();
@@ -56,19 +80,36 @@ export default {
         goto: function(url) {
             this.$router.push(url);
         },
+        checkIndex: function() {
+            const idx = this.currentIndex;
+
+            if (typeof idx !== 'undefined' && idx !== this.$store.state.activeConf) {
+                this.$store.commit('changePageActive', idx);
+                this.$store.dispatch('update');
+            }
+        },
         checkState: function() {
             if (this.fetchState === 'bad') {
                 this.goto('configuration');
             }
         },
         checkMode: function() {
-            const isSilent = checkSilentPeriod(this.$store.state);
+            const isSilent = checkSilentPeriod(this.$store);
             this.mode = isSilent ? 'silent' : 'normal';
         },
     },
     watch: {
         fetchState: function() {
             this.checkState();
+        },
+        id() {
+            this.currentIndex = this.id;
+        },
+        '$route.params.id': function() {
+            this.currentIndex = this.$route.params.id;
+        },
+        currentIndex() {
+            this.checkIndex();
         },
     },
     mount() {
@@ -114,5 +155,20 @@ export default {
     border-bottom-left-radius: 1rem;
     border-bottom-right-radius: 1rem;
     cursor: pointer;
+}
+.banner-test {
+    position: absolute;
+    z-index: 10;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3vh;
+    padding: 1rem;
+    transition: opacity 100ms ;
+    opacity: 0;
+}
+.banner-show {
+    transition-duration: 2s;
+    opacity: 1;
 }
 </style>
