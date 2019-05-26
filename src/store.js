@@ -118,6 +118,9 @@ export default new Vuex.Store({
 
         fetchState: 'good',
         onLine: true,
+
+        isLoading: false,
+        requestId: 0,
     }, initConf()),
     getters: {
         silentPeriods(state) {
@@ -200,6 +203,17 @@ export default new Vuex.Store({
             state.activeConf = +index;
             copyStateConf(state);
         },
+        loading(state,) {
+            state.requestId = state.requestId + 1;
+            state.isLoading = true;
+        },
+        loaded(state, id) {
+            if (id < state.requestId){
+                // deprecated request
+                return;
+            }
+            state.isLoading = false;
+        },
     },
     actions: {
         initialize({commit, dispatch}) {
@@ -234,6 +248,8 @@ export default new Vuex.Store({
                     headers.Authorization = 'Basic ' + btoa(authorization);
                 }
 
+                commit('loading');
+                const rId = state.requestId;
                 const response = await fetch(url, {
                     credentials: 'same-origin',
                     headers: headers,
@@ -246,9 +262,23 @@ export default new Vuex.Store({
                     commit('setStatus', {
                         fetchState: 'bad',
                     });
+                    commit('loaded', rId);
                     return;
                 }
-                const json = await response.json();
+                const json = await response.json().catch((err) => {
+                    console.warn('Request did not return a JSON', err.message);
+                    return;
+                });
+                commit('loaded', rId);
+                if (!json) {
+                    commit('setStatus', {
+                        fetchState: 'bad',
+                    });
+                    return;
+                }
+                if (state.isLoading) {
+                    return;
+                }
                 commit('setState', json);
                 commit('setStatus', {
                     fetchState: 'good',

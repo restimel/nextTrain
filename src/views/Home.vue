@@ -10,6 +10,12 @@
             Aucune ligne n'a été récupérée avec la configuration donnée.
             <router-link to="configuration">Voir la configuration</router-link>
         </div>
+        <div
+            class="banner-test"
+            :class="{'banner-show': isLoading}"
+        >
+            Loading...
+        </div>
         <div v-if="modeText"
             class="notification"
             @click="update"
@@ -34,20 +40,27 @@ export default {
         },
     },
     data: function() {
-        setTimeout(() => {
+        this.$nextTick(() => {
             this.checkIndex();
-        }, 0);
+        });
         this.checkState();
         this.checkMode();
+        setTimeout(() => {
+            this.test = true;
+        }, 2000);
 
         return {
             currentIndex: this.id || this.$route.params.id,
             mode: 'normal',
+            test: false,
         };
     },
     computed: {
         departures: function() {
             return this.$store.state.departures.slice(0, 10);
+        },
+        isLoading: function() {
+            return this.$store.state.isLoading;
         },
         fetchState: function() {
             this.checkMode();
@@ -142,5 +155,20 @@ export default {
     border-bottom-left-radius: 1rem;
     border-bottom-right-radius: 1rem;
     cursor: pointer;
+}
+.banner-test {
+    position: absolute;
+    z-index: 10;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3vh;
+    padding: 1rem;
+    transition: opacity 100ms ;
+    opacity: 0;
+}
+.banner-show {
+    transition-duration: 2s;
+    opacity: 1;
 }
 </style>
