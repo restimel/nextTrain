@@ -7,14 +7,9 @@ Vue.use(Vuex);
 
 let timerRefresh = 0;
 
-export default new Vuex.Store({
-    state: {
-        departures: [],
-        context: {
-            timezone: 'Europe/Paris',
-            current_datetime: '',
-        },
-
+function initConf() {
+    return {
+        name: '',
         token: '',
         station: '',
         distance: 200,
@@ -27,82 +22,138 @@ export default new Vuex.Store({
         apiName: 'sncf',
         apiMode: 'position',
 
+        cacheUrl: '',
+    };
+}
+
+function setOneConfiguration(state, { name, token, station, distance, lat, lng, refreshTime, apiName, apiMode, silentPeriods, nbItems }, index) {
+    let conf = state.configurations[index];
+
+    if (!conf) {
+        state.configurations[index] = initConf();
+        conf = state.configurations[index];
+    }
+
+    if (typeof name === 'string') {
+        conf.name = name;
+    }
+
+    if (typeof token === 'string') {
+        conf.token = token;
+    }
+    if (typeof station === 'string') {
+        conf.station = station;
+    }
+
+    if (typeof distance !== 'undefined') {
+        distance = +distance;
+        if (!isNaN(distance) && distance > 0) {
+            conf.distance = distance;
+        } else {
+            conf.distance = 200;
+        }
+    }
+
+    if (!isNaN(lat) && !isNaN(lng)) {
+        conf.lat = +lat;
+        conf.lng = +lng;
+    } else if (lat !== undefined || lng !== undefined) {
+        conf.lat = 0;
+        conf.lng = 0;
+    }
+
+    if (typeof refreshTime !== 'undefined') {
+        refreshTime = +refreshTime;
+        if (!isNaN(refreshTime) && refreshTime > 0) {
+            conf.refreshTime = refreshTime;
+        } else {
+            conf.refreshTime = 30;
+        }
+    }
+
+    if (silentPeriods instanceof Array) {
+        conf.silentPeriods = silentPeriods.slice();
+    }
+
+    if (typeof nbItems !== 'undefined') {
+        nbItems = +nbItems;
+        if (!isNaN(nbItems) && nbItems > 0) {
+            conf.nbItems = nbItems;
+        } else {
+            conf.nbItems = 10;
+        }
+    }
+
+    if (typeof apiName === 'string') {
+        conf.apiName = apiName;
+    }
+    if (typeof apiMode === 'string') {
+        conf.apiMode = apiMode;
+    }
+
+    state.cacheUrl = '';
+}
+
+function copyStateConf(state) {
+    const configuration = state.configurations[state.activeConf];
+    if (!configuration) {
+        console.warn('Error to read configuration. Index %d not found, maximum is %d', state.activeConf, state.configurations.length);
+        return;
+    }
+    for (let [key, value] of Object.entries(configuration)) {
+        state[key] = value;
+    }
+}
+
+export default new Vuex.Store({
+    state: Object.assign({
+        departures: [],
+        context: {
+            timezone: 'Europe/Paris',
+            current_datetime: '',
+        },
+
+        configurations: [initConf()],
+        activeConf: 0,
+
         fetchState: 'good',
         onLine: true,
-        cacheUrl: '',
-    },
+    }, initConf()),
     mutations: {
         setState(state, {departures, context}) {
             state.departures = departures;
             state.context = context;
         },
-        setConfiguration(state, { token, station, distance, lat, lng, refreshTime, apiName, apiMode, silentPeriods, nbItems }) {
-            if (typeof token === 'string') {
-                state.token = token;
-            }
-            if (typeof station === 'string') {
-                state.station = station;
-            }
-
-            if (typeof distance !== 'undefined') {
-                distance = +distance;
-                if (!isNaN(distance) && distance > 0) {
-                    state.distance = distance;
-                } else {
-                    state.distance = 200;
+        setConfiguration(state, configurations, index) {
+            if (Array.isArray(configurations)) {
+                configurations.forEach((configuration, idx) => setOneConfiguration(state, configuration, idx));
+            } else {
+                if (typeof index === 'undefined') {
+                    index = state.activeConf;
                 }
+                setOneConfiguration(state, configurations, index);
             }
 
-            if (!isNaN(lat) && !isNaN(lng)) {
-                state.lat = +lat;
-                state.lng = +lng;
-            } else if (lat !== undefined || lng !== undefined) {
-                state.lat = 0;
-                state.lng = 0;
+            //apply change
+            state.configurations= state.configurations.slice();
+            copyStateConf(state);
+
+            if (!state.configurations[state.activeConf]) {
+                state.activeConf = 0;
             }
 
-            if (typeof refreshTime !== 'undefined') {
-                refreshTime = +refreshTime;
-                if (!isNaN(refreshTime) && refreshTime > 0) {
-                    state.refreshTime = refreshTime;
-                } else {
-                    state.refreshTime = 30;
+            const exception = ['cacheUrl'];
+            const saveConf = state.configurations.map((conf) => {
+                const obj = {};
+                for (let [key, value] of Object.entries(conf)) {
+                    if (exception.includes(key)) {
+                        continue;
+                    }
+                    obj[key] = value;
                 }
-            }
 
-            if (silentPeriods instanceof Array) {
-                state.silentPeriods = silentPeriods.slice();
-            }
-
-            if (typeof nbItems !== 'undefined') {
-                nbItems = +nbItems;
-                if (!isNaN(nbItems) && nbItems > 0) {
-                    state.nbItems = nbItems;
-                } else {
-                    state.nbItems = 10;
-                }
-            }
-
-            if (typeof apiName === 'string') {
-                state.apiName = apiName;
-            }
-            if (typeof apiMode === 'string') {
-                state.apiMode = apiMode;
-            }
-            state.cacheUrl = '';
-
-            const saveConf = {
-                token: state.token,
-                station: state.station,
-                distance: state.distance,
-                lat: state.lat,
-                lng: state.lng,
-                refreshTime: state.refreshTime,
-                silentPeriods: state.silentPeriods,
-                nbItems: state.nbItems,
-                apiName: state.apiName,
-                apiMode: state.apiMode,
-            };
+                return obj;
+            });
             localStorage.nextTrainConfig = JSON.stringify(saveConf);
         },
         setStatus(state, { fetchState, onLine }) {
@@ -114,7 +165,15 @@ export default new Vuex.Store({
             }
         },
         setCacheUrl(state, cacheUrl) {
+            state.configurations[state.activeConf].cacheUrl = cacheUrl;
             state.cacheUrl = cacheUrl;
+        },
+        changePageActive(state, index) {
+            if (!state.configurations[+index] || state.activeConf === index) {
+                return;
+            }
+            state.activeConf = +index;
+            copyStateConf(state);
         },
     },
     actions: {
@@ -188,6 +247,28 @@ export default new Vuex.Store({
                     dispatch('update');
                 }
             }, period);
+        },
+        createNewConfiguration({commit, state}) {
+            const confs = state.configurations;
+            confs.push(initConf());
+            commit('setConfiguration', confs);
+            commit('changePageActive', confs.length -1);
+        },
+        removeConfiguration({commit, dispatch, state}, index) {
+            const confs = state.configurations;
+            let idx = state.activeConf;
+
+            confs.splice(index, 1);
+            commit('setConfiguration', confs);
+            if (index === idx) {
+                if (idx !== 0) {
+                    idx--;
+                }
+                commit('changePageActive', idx);
+            }
+            if (confs.length === 0) {
+                dispatch('createNewConfiguration');
+            }
         },
     },
 });

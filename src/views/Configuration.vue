@@ -1,7 +1,13 @@
 <template>
     <div class="configuration">
-        <h1>Configuration</h1>
         <div class="content">
+            <label>
+                Nom de cette configuration:
+                <input
+                    type="name"
+                    v-model="tabName"
+                >
+            </label>
             <label
                 :class="{ isWrong: errors.has('apiName') }"
             >
@@ -85,6 +91,9 @@
             <div :class="fetchState">
                 {{statusText}}
             </div>
+            <button @click="remove">
+                Supprimer cette configuration
+            </button>
         </div>
     </div>
 </template>
@@ -99,6 +108,14 @@ import Period from '@/components/Period.vue';
 export default {
     name: 'configuration',
     computed: {
+        tabName: {
+            get: function() {
+                return this.$store.state.name;
+            },
+            set: function(value) {
+                this.$store.commit('setConfiguration', { name: value });
+            },
+        },
         token: {
             get: function() {
                 return this.$store.state.token;
@@ -230,6 +247,9 @@ export default {
             periods.splice(key, 1);
             this.silentPeriods = periods;
         },
+        remove() {
+            this.$store.dispatch('removeConfiguration', this.$store.state.activeConf);
+        },
     },
     components: {
         DistanceRange, GeoMap, Period,
@@ -238,6 +258,9 @@ export default {
 </script>
 
 <style scoped>
+.configuration {
+    padding-top: 1em;
+}
 label {
     display: block;
     margin-bottom: 1em;

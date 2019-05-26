@@ -2,9 +2,15 @@
   <div id="app">
     <router-view/>
     <div id="nav">
-      <router-link to="home">Home</router-link> |
-      <router-link to="configuration">Config</router-link> |
-      <router-link to="about">About</router-link>
+        <span  v-for="(page, idx) of pages" :key="'link-'+idx+page">
+            <router-link
+                :to="'/home/' + idx"
+            >
+                {{page}}
+            </router-link> |
+        </span>
+        <router-link to="/configuration">Config</router-link> |
+        <router-link to="/about">About</router-link>
     </div>
     <div v-if="showBanner"
         id="information-banner"
@@ -30,6 +36,10 @@ export default {
                 return 'Offline mode: no internet connection';
             }
             return '';
+        },
+        pages() {
+            const confs = this.$store.state.configurations;
+            return confs.map((conf, idx) => conf.name || `configuration #${idx + 1}`);
         },
     },
 };

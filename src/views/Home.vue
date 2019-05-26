@@ -1,7 +1,7 @@
 <template>
     <div class="home">
-        <Train v-for="departure of departures"
-            :key="departure.route.id + departure.stop_date_time.departure_date_time"
+        <Train v-for="(departure, idx) of departures"
+            :key="departure.route.id + departure.stop_date_time.departure_date_time + idx"
             :departure="departure"
         />
         <div v-if="departures.length === 0"
@@ -27,10 +27,21 @@ import { checkSilentPeriod } from '@/helper.js';
 
 export default {
     name: 'home',
+    props: {
+        id: {
+            type: Number,
+            required: false,
+        },
+    },
     data: function() {
+        setTimeout(() => {
+            this.checkIndex();
+        }, 0);
         this.checkState();
         this.checkMode();
+
         return {
+            currentIndex: this.id || this.$route.params.id,
             mode: 'normal',
         };
     },
@@ -56,6 +67,14 @@ export default {
         goto: function(url) {
             this.$router.push(url);
         },
+        checkIndex: function() {
+            const idx = this.currentIndex;
+
+            if (typeof idx !== 'undefined' && idx !== this.$store.state.activeConf) {
+                this.$store.commit('changePageActive', idx);
+                this.$store.dispatch('update');
+            }
+        },
         checkState: function() {
             if (this.fetchState === 'bad') {
                 this.goto('configuration');
@@ -69,6 +88,15 @@ export default {
     watch: {
         fetchState: function() {
             this.checkState();
+        },
+        id() {
+            this.currentIndex = this.id;
+        },
+        '$route.params.id': function() {
+            this.currentIndex = this.$route.params.id;
+        },
+        currentIndex() {
+            this.checkIndex();
         },
     },
     mount() {
