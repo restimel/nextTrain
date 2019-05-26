@@ -91,7 +91,7 @@ function setOneConfiguration(state, { name, token, station, distance, lat, lng, 
         conf.apiMode = apiMode;
     }
 
-    state.cacheUrl = '';
+    conf.cacheUrl = '';
 }
 
 function copyStateConf(state) {
@@ -197,7 +197,7 @@ export default new Vuex.Store({
             state.cacheUrl = cacheUrl;
         },
         changePageActive(state, index) {
-            if (!state.configurations[+index] || state.activeConf === index) {
+            if (!state.configurations[+index] || state.activeConf === +index) {
                 return;
             }
             state.activeConf = +index;
