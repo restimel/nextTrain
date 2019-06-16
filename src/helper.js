@@ -44,7 +44,7 @@ export function checkURL(state, url) {
     return !errors.size;
 }
 
-export function getUrlTags(name, mode){
+export function getUrlTags(name, mode = 'position'){
     const api = urlAPIs[name];
     const url = api && api[mode];
     const rgx = /%\(([^)]+)\)s/g;
