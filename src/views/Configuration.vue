@@ -21,19 +21,6 @@
                     </option>
                 </select>
             </label>
-            <label
-                :class="{ isWrong: errors.has('apiMode') }"
-            >
-                API mode:
-                <select v-model="apiMode">
-                    <option v-for="opt of apiModeOptions"
-                        :key="opt.id"
-                        :value="opt.id"
-                    >
-                        {{opt.label}}
-                    </option>
-                </select>
-            </label>
             <label v-if="tags.includes('token')"
                 :class="{ isWrong: errors.has('token') }"
             >
@@ -48,7 +35,7 @@
                 :class="{ isWrong: errors.has('lat') || errors.has('lng') }"
             >
                 Lieu:
-                <GeoMap v-model="latLng" />
+                <GeoMap v-model="latLng" addButton="edit" />
             </label>
             <label v-if="tags.includes('distance')"
                 :class="{ isWrong: errors.has('distance') }"
@@ -102,7 +89,7 @@
 
 import { urlAPIs, getURL, getUrlTags, errors as apiErrors } from '@/helper.js';
 import DistanceRange from '@/components/DistanceRange.vue';
-import GeoMap from '@/components/Map.vue';
+import GeoMap from '@/components/MapLocation.vue';
 import Period from '@/components/Period.vue';
 
 export default {
@@ -165,14 +152,6 @@ export default {
                 this.$store.commit('setConfiguration', { apiName: value });
             },
         },
-        apiMode: {
-            get: function() {
-                return this.$store.state.apiMode;
-            },
-            set: function(value) {
-                this.$store.commit('setConfiguration', { apiMode: value });
-            },
-        },
         fetchState: function() {
             return this.$store.state.fetchState;
         },
@@ -181,7 +160,7 @@ export default {
         },
 
         tags: function() {
-            return getUrlTags(this.apiName, this.apiMode);
+            return getUrlTags(this.apiName, 'position');
         },
 
         statusText: function() {
@@ -197,7 +176,7 @@ export default {
 
         isConfValid: function() {
             //TODO reset url
-            return !!getURL(this.$store, this.apiName, this.apiMode);
+            return !!getURL(this.$store, this.apiName, 'position');
         },
         isValid: function() {
             return this.isConfValid && this.fetchState === 'good';

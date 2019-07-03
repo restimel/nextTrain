@@ -119,6 +119,7 @@ export default new Vuex.Store({
         fetchState: 'good',
         onLine: true,
 
+        dialogOpen: false,
         isLoading: false,
         requestId: 0,
     }, initConf()),
@@ -214,6 +215,9 @@ export default new Vuex.Store({
             }
             state.isLoading = false;
         },
+        openDialog(state, isOpen = true) {
+            state.dialogOpen = isOpen;
+        },
     },
     actions: {
         initialize({commit, dispatch}) {
@@ -224,6 +228,29 @@ export default new Vuex.Store({
                 };
             }
             dispatch('update');
+        },
+        async fetch(store, url) {
+            if (!url) {
+                throw 'URL is missing';
+            }
+            const headers = {
+                'Content-Type': 'text/plain',
+            };
+            if (url.includes('@')) {
+                let authorization;
+                url = url.replace(/(https?:\/\/)([^@]+)@/, (_, protocole, auth) => {
+                    authorization = auth;
+                    return protocole;
+                });
+                headers.Authorization = 'Basic ' + btoa(authorization);
+            }
+            return fetch(url, {
+                credentials: 'same-origin',
+                headers: headers,
+            }).catch((err) => {
+                console.warn('Error in request:', err.message);
+                return { ok: false };
+            });
         },
         async update({ commit, dispatch, state }) {
             if (!state.onLine) {
@@ -236,27 +263,9 @@ export default new Vuex.Store({
 
             let url = getURL({state, commit}, state.apiName, state.apiMode);
             if (url) {
-                const headers = {
-                    'Content-Type': 'text/plain',
-                };
-                if (url.includes('@')) {
-                    let authorization;
-                    url = url.replace(/(https?:\/\/)([^@]+)@/, (_, protocole, auth) => {
-                        authorization = auth;
-                        return protocole;
-                    });
-                    headers.Authorization = 'Basic ' + btoa(authorization);
-                }
-
                 commit('loading');
                 const rId = state.requestId;
-                const response = await fetch(url, {
-                    credentials: 'same-origin',
-                    headers: headers,
-                }).catch((err) => {
-                    console.warn('Error in request:', err.message);
-                    return {ok: false};
-                });
+                const response = await dispatch('fetch', url);
                 if (!response.ok) {
                     console.warn('Data failed to be fetched');
                     commit('setStatus', {
@@ -296,7 +305,7 @@ export default new Vuex.Store({
             const period = state.refreshTime;
 
             timerRefresh = setTimeout(() => {
-                if (checkSilentPeriod({getters})) {
+                if (checkSilentPeriod({getters, state})) {
                     dispatch('nextUpdate');
                 } else {
                     dispatch('update');

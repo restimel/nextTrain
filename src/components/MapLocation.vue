@@ -3,6 +3,12 @@
         <span class="mainElement" @click="show = true; initialize()">
             {{value}}
         </span>
+        <button v-if="addButton"
+            class="edit-button"
+            @click="show = true; initialize()"
+        >
+            {{addButton}}
+        </button>
         <dialog v-if="show"
             class="map"
         >
@@ -30,7 +36,7 @@
             <footer>
                 <span>{{message}}</span>
                 <button @click="getPosition">Ma position actuelle</button>
-                <button @click="show = false">Close</button>
+                <button @click.prevent.stop="show = false">Close</button>
             </footer>
         </dialog>
     </span>
@@ -47,6 +53,7 @@ export default {
     name: 'geomap',
     props: {
         value: String,
+        addButton: String,
     },
     data () {
         this.$nextTick(this.initialize);
@@ -138,6 +145,9 @@ export default {
 </script>
 
 <style scoped>
+.edit-button {
+    margin-left: 1em;
+}
 .mainElement {
     cursor: pointer;
 }
