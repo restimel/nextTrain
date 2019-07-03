@@ -1,17 +1,34 @@
 <template>
-    <div class="departure" :class="status">
+    <div
+        class="departure"
+        :class="status"
+        @mouseenter="showLineBtn=true"
+        @mouseleave="showLineBtn=false"
+    >
         <div :style="codeColor">{{line}}</div>
         <div>{{direction}}</div>
+        <MapLine
+            :show="showLineBtn"
+            buttonName="i"
+            :departure="departure"
+        />
         <div>{{displayTime}}</div>
     </div>
 </template>
 
 <script>
 
+import MapLine from '@/components/MapLine.vue';
+
 export default {
     name: 'train',
     props: {
         departure: Object,
+    },
+    data() {
+        return {
+            showLineBtn: false,
+        };
     },
     computed: {
         codeColor: function() {
@@ -65,13 +82,16 @@ export default {
             return 'late';
         },
     },
+    components: {
+        MapLine,
+    }
 };
 </script>
 
 <style scoped>
 .departure {
     display: grid;
-    grid-template-columns: 15vw 1fr 10vw;
+    grid-template-columns: 15vw 1fr 2rem 10vw;
     align-items: center;
     font-size: 2vw;
     text-align: left;
